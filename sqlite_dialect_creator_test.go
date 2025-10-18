@@ -1,4 +1,4 @@
-package tests
+package database
 
 import (
 	"testing"
@@ -11,8 +11,6 @@ import (
 
 	flam "github.com/happyhippyhippo/flam"
 	config "github.com/happyhippyhippo/flam-config"
-	database "github.com/happyhippyhippo/flam-database"
-	mocks "github.com/happyhippyhippo/flam-database/tests/mocks"
 	filesystem "github.com/happyhippyhippo/flam-filesystem"
 	flamTime "github.com/happyhippyhippo/flam-time"
 )
@@ -26,19 +24,19 @@ func Test_sqliteDialectCreator_Accept(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
 				"driver": "mock",
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetDialect("default")
 			assert.Nil(t, got)
 			assert.ErrorIs(t, e, flam.ErrInvalidResourceConfig)
@@ -53,19 +51,19 @@ func Test_sqliteDialectCreator_Accept(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.DialectDriverSqlite,
+				"driver": DialectDriverSqlite,
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetDialect("default")
 			assert.NotNil(t, got)
 			assert.NoError(t, e)
@@ -82,19 +80,19 @@ func Test_sqliteDialectCreator_Create(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.DialectDriverSqlite,
+				"driver": DialectDriverSqlite,
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetDialect("default")
 			require.NotNil(t, got)
 			require.NoError(t, e)
@@ -112,11 +110,11 @@ func Test_sqliteDialectCreator_Create(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.DialectDriverSqlite,
+				"driver": DialectDriverSqlite,
 				"host":   "192.168.1.1",
 				"params": flam.Bag{
 					"param1": "value1",
@@ -124,13 +122,13 @@ func Test_sqliteDialectCreator_Create(t *testing.T) {
 					"param3": "value3",
 				},
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetDialect("default")
 			require.NotNil(t, got)
 			require.NoError(t, e)

@@ -1,4 +1,4 @@
-package tests
+package database
 
 import (
 	"testing"
@@ -11,8 +11,6 @@ import (
 
 	flam "github.com/happyhippyhippo/flam"
 	config "github.com/happyhippyhippo/flam-config"
-	database "github.com/happyhippyhippo/flam-database"
-	mocks "github.com/happyhippyhippo/flam-database/tests/mocks"
 	filesystem "github.com/happyhippyhippo/flam-filesystem"
 	flamTime "github.com/happyhippyhippo/flam-time"
 )
@@ -26,16 +24,16 @@ func Test_defaultConfigCreator_Accept(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{"default": flam.Bag{"driver": "mock"}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			assert.Nil(t, got)
 			assert.ErrorIs(t, e, flam.ErrInvalidResourceConfig)
@@ -50,16 +48,16 @@ func Test_defaultConfigCreator_Accept(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
-		cfg := flam.Bag{"default": flam.Bag{"driver": database.ConfigDriverDefault}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(cfg).Times(1)
+		cfg := flam.Bag{"default": flam.Bag{"driver": ConfigDriverDefault}}
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			assert.NotNil(t, got)
 			assert.NoError(t, e)
@@ -76,22 +74,22 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.ConfigDriverDefault,
+				"driver": ConfigDriverDefault,
 				"logger": flam.Bag{
 					"slow_threshold": "invalid",
 				},
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			assert.Nil(t, got)
 			assert.ErrorContains(t, e, `time: invalid duration "invalid"`)
@@ -106,25 +104,25 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.ConfigDriverDefault,
+				"driver": ConfigDriverDefault,
 				"logger": flam.Bag{
 					"level": "invalid",
 				},
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			assert.Nil(t, got)
-			assert.ErrorIs(t, e, database.ErrUnknownLogLevel)
+			assert.ErrorIs(t, e, ErrUnknownLogLevel)
 		}))
 	})
 
@@ -136,25 +134,25 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.ConfigDriverDefault,
+				"driver": ConfigDriverDefault,
 				"logger": flam.Bag{
 					"type": "invalid",
 				},
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			assert.Nil(t, got)
-			assert.ErrorIs(t, e, database.ErrUnknownLogType)
+			assert.ErrorIs(t, e, ErrUnknownLogType)
 		}))
 	})
 
@@ -166,20 +164,20 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver":           database.ConfigDriverDefault,
+				"driver":           ConfigDriverDefault,
 				"prepare_stmt_ttl": "invalid",
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			assert.Nil(t, got)
 			assert.ErrorContains(t, e, `time: invalid duration "invalid"`)
@@ -194,19 +192,19 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.ConfigDriverDefault,
+				"driver": ConfigDriverDefault,
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			require.NotNil(t, got)
 			require.NoError(t, e)
@@ -237,11 +235,11 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 		require.NoError(t, flamTime.NewProvider().Register(container))
 		require.NoError(t, filesystem.NewProvider().Register(container))
 		require.NoError(t, config.NewProvider().Register(container))
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		cfg := flam.Bag{
 			"default": flam.Bag{
-				"driver":                   database.ConfigDriverDefault,
+				"driver":                   ConfigDriverDefault,
 				"skip_default_transaction": true,
 				"full_save_associations":   true,
 				"dry_run":                  true,
@@ -258,13 +256,13 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				"translate_error":                               true,
 				"propagate_unscoped":                            true,
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(cfg).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(cfg).Times(1)
 		require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			require.NotNil(t, got)
 			require.NoError(t, e)
@@ -299,7 +297,7 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				name: "default values",
 				cfg: flam.Bag{
 					"default": flam.Bag{
-						"driver": database.ConfigDriverDefault,
+						"driver": ConfigDriverDefault,
 					},
 				},
 			},
@@ -307,7 +305,7 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				name: "with slow_threshold",
 				cfg: flam.Bag{
 					"default": flam.Bag{
-						"driver": database.ConfigDriverDefault,
+						"driver": ConfigDriverDefault,
 						"logger": flam.Bag{
 							"slow_threshold": "1s",
 						},
@@ -318,9 +316,9 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				name: "silent log level",
 				cfg: flam.Bag{
 					"default": flam.Bag{
-						"driver": database.ConfigDriverDefault,
+						"driver": ConfigDriverDefault,
 						"logger": flam.Bag{
-							"type":  database.ConfigLoggerDefault,
+							"type":  ConfigLoggerDefault,
 							"level": "silent",
 						},
 					}},
@@ -329,9 +327,9 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				name: "error log level",
 				cfg: flam.Bag{
 					"default": flam.Bag{
-						"driver": database.ConfigDriverDefault,
+						"driver": ConfigDriverDefault,
 						"logger": flam.Bag{
-							"type":  database.ConfigLoggerDefault,
+							"type":  ConfigLoggerDefault,
 							"level": "error",
 						},
 					}},
@@ -340,9 +338,9 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				name: "warn log level",
 				cfg: flam.Bag{
 					"default": flam.Bag{
-						"driver": database.ConfigDriverDefault,
+						"driver": ConfigDriverDefault,
 						"logger": flam.Bag{
-							"type":  database.ConfigLoggerDefault,
+							"type":  ConfigLoggerDefault,
 							"level": "warn",
 						},
 					}},
@@ -351,9 +349,9 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				name: "info log level",
 				cfg: flam.Bag{
 					"default": flam.Bag{
-						"driver": database.ConfigDriverDefault,
+						"driver": ConfigDriverDefault,
 						"logger": flam.Bag{
-							"type":  database.ConfigLoggerDefault,
+							"type":  ConfigLoggerDefault,
 							"level": "info",
 						},
 					}},
@@ -362,9 +360,9 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				name: "discard log type",
 				cfg: flam.Bag{
 					"default": flam.Bag{
-						"driver": database.ConfigDriverDefault,
+						"driver": ConfigDriverDefault,
 						"logger": flam.Bag{
-							"type": database.ConfigLoggerDiscard,
+							"type": ConfigLoggerDiscard,
 						},
 					},
 				},
@@ -373,9 +371,9 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 				name: "default log type",
 				cfg: flam.Bag{
 					"default": flam.Bag{
-						"driver": database.ConfigDriverDefault,
+						"driver": ConfigDriverDefault,
 						"logger": flam.Bag{
-							"type": database.ConfigLoggerDefault,
+							"type": ConfigLoggerDefault,
 						},
 					},
 				},
@@ -387,15 +385,15 @@ func Test_defaultConfigCreator_Create(t *testing.T) {
 			require.NoError(t, flamTime.NewProvider().Register(container))
 			require.NoError(t, filesystem.NewProvider().Register(container))
 			require.NoError(t, config.NewProvider().Register(container))
-			require.NoError(t, database.NewProvider().Register(container))
+			require.NoError(t, NewProvider().Register(container))
 
-			factoryConfig := mocks.NewFactoryConfig(ctrl)
-			factoryConfig.EXPECT().Get(database.PathConfigs).Return(scenario.cfg).Times(1)
+			factoryConfig := NewFactoryConfigMock(ctrl)
+			factoryConfig.EXPECT().Get(PathConfigs).Return(scenario.cfg).Times(1)
 			require.NoError(t, container.Decorate(func(flam.FactoryConfig) flam.FactoryConfig {
 				return factoryConfig
 			}))
 
-			assert.NoError(t, container.Invoke(func(facade database.Facade) {
+			assert.NoError(t, container.Invoke(func(facade Facade) {
 				got, e := facade.GetConfig("default")
 				assert.NotNil(t, got)
 				assert.NoError(t, e)
