@@ -1,4 +1,4 @@
-package tests
+package database
 
 import (
 	"testing"
@@ -10,8 +10,6 @@ import (
 	"gorm.io/gorm"
 
 	flam "github.com/happyhippyhippo/flam"
-	database "github.com/happyhippyhippo/flam-database"
-	mocks "github.com/happyhippyhippo/flam-database/tests/mocks"
 )
 
 func Test_Facade_HasConfig(t *testing.T) {
@@ -20,16 +18,16 @@ func Test_Facade_HasConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.False(t, facade.HasConfig("mock"))
 		}))
 	})
@@ -39,16 +37,16 @@ func Test_Facade_HasConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{"mock": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.True(t, facade.HasConfig("mock"))
 		}))
 	})
@@ -58,18 +56,18 @@ func Test_Facade_HasConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
 		databaseConfig := &gorm.Config{}
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.NoError(t, facade.AddConfig("mock", databaseConfig))
 
 			assert.True(t, facade.HasConfig("mock"))
@@ -83,16 +81,16 @@ func Test_Facade_ListConfigs(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.Empty(t, facade.ListConfigs())
 		}))
 	})
@@ -102,19 +100,19 @@ func Test_Facade_ListConfigs(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"gamma": flam.Bag{},
 			"alpha": flam.Bag{},
 			"beta":  flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		assert.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ElementsMatch(
 				t,
 				[]string{"alpha", "beta", "gamma"},
@@ -127,21 +125,21 @@ func Test_Facade_ListConfigs(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"gamma": flam.Bag{},
 			"alpha": flam.Bag{},
 			"beta":  flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(2)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(2)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
 		databaseConfig := &gorm.Config{}
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddConfig("delta", databaseConfig))
 
 			assert.ElementsMatch(
@@ -158,16 +156,16 @@ func Test_Facade_GetConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("mock")
 			assert.Nil(t, got)
 			assert.ErrorIs(t, e, flam.ErrUnknownResource)
@@ -179,19 +177,19 @@ func Test_Facade_GetConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.ConfigDriverDefault,
+				"driver": ConfigDriverDefault,
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConfig("default")
 			assert.NotNil(t, got)
 			assert.NoError(t, e)
@@ -204,18 +202,18 @@ func Test_Facade_GetConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
 		databaseConfig := &gorm.Config{}
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddConfig("disk", databaseConfig))
 
 			got, e := facade.GetConfig("disk")
@@ -231,14 +229,14 @@ func Test_Facade_AddConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ErrorIs(
 				t,
 				facade.AddConfig("config", nil),
@@ -251,18 +249,18 @@ func Test_Facade_AddConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{"config": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
 		databaseConfig := &gorm.Config{}
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ErrorIs(
 				t,
 				facade.AddConfig("config", databaseConfig),
@@ -275,18 +273,18 @@ func Test_Facade_AddConfig(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
 		databaseConfig := &gorm.Config{}
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddConfig("config", databaseConfig))
 
 			got, e := facade.GetConfig("config")
@@ -302,16 +300,16 @@ func Test_Facade_HasDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.False(t, facade.HasDialect("mock"))
 		}))
 	})
@@ -321,16 +319,16 @@ func Test_Facade_HasDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{"mock": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.True(t, facade.HasDialect("mock"))
 		}))
 	})
@@ -340,18 +338,18 @@ func Test_Facade_HasDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		dialect := mocks.NewDialect(ctrl)
+		dialect := NewDialectMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddDialect("mock", dialect))
 
 			assert.True(t, facade.HasDialect("mock"))
@@ -365,16 +363,16 @@ func Test_Facade_ListDialects(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.Empty(t, facade.ListDialects())
 		}))
 	})
@@ -384,19 +382,19 @@ func Test_Facade_ListDialects(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"gamma": flam.Bag{},
 			"alpha": flam.Bag{},
 			"beta":  flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ElementsMatch(
 				t,
 				[]string{"alpha", "beta", "gamma"},
@@ -409,21 +407,21 @@ func Test_Facade_ListDialects(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"gamma": flam.Bag{},
 			"alpha": flam.Bag{},
 			"beta":  flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(2)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(2)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		dialect := mocks.NewDialect(ctrl)
+		dialect := NewDialectMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddDialect("delta", dialect))
 
 			assert.ElementsMatch(
@@ -440,16 +438,16 @@ func Test_Facade_GetDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetDialect("mock")
 			assert.Nil(t, got)
 			assert.ErrorIs(t, e, flam.ErrUnknownResource)
@@ -461,19 +459,19 @@ func Test_Facade_GetDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"sqlite": flam.Bag{
-				"driver": database.DialectDriverSqlite,
+				"driver": DialectDriverSqlite,
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetDialect("sqlite")
 			assert.NotNil(t, got)
 			assert.NoError(t, e)
@@ -485,22 +483,22 @@ func Test_Facade_GetDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"mysql": flam.Bag{
-				"driver":   database.DialectDriverMysql,
+				"driver":   DialectDriverMysql,
 				"username": "root",
 				"password": "flam",
 				"schema":   "flam",
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetDialect("mysql")
 			assert.NotNil(t, got)
 			assert.NoError(t, e)
@@ -512,22 +510,22 @@ func Test_Facade_GetDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"postgres": flam.Bag{
-				"driver":   database.DialectDriverPostgres,
+				"driver":   DialectDriverPostgres,
 				"username": "root",
 				"password": "flam",
 				"schema":   "flam",
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetDialect("postgres")
 			assert.NotNil(t, got)
 			assert.NoError(t, e)
@@ -539,18 +537,18 @@ func Test_Facade_GetDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		dialect := mocks.NewDialect(ctrl)
+		dialect := NewDialectMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddDialect("disk", dialect))
 
 			got, e := facade.GetDialect("disk")
@@ -566,14 +564,14 @@ func Test_Facade_AddDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ErrorIs(
 				t,
 				facade.AddDialect("dialect", nil),
@@ -586,18 +584,18 @@ func Test_Facade_AddDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{"dialect": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		dialect := mocks.NewDialect(ctrl)
+		dialect := NewDialectMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ErrorIs(
 				t,
 				facade.AddDialect("dialect", dialect),
@@ -610,18 +608,18 @@ func Test_Facade_AddDialect(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathDialects).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		dialect := mocks.NewDialect(ctrl)
+		dialect := NewDialectMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddDialect("dialect", dialect))
 
 			got, e := facade.GetDialect("dialect")
@@ -637,16 +635,16 @@ func Test_Facade_HasConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.False(t, facade.HasConnection("mock"))
 		}))
 	})
@@ -656,16 +654,16 @@ func Test_Facade_HasConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{"mock": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.True(t, facade.HasConnection("mock"))
 		}))
 	})
@@ -675,18 +673,18 @@ func Test_Facade_HasConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		connection := mocks.NewConnection(ctrl)
+		connection := NewConnectionMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddConnection("mock", connection))
 
 			assert.True(t, facade.HasConnection("mock"))
@@ -700,16 +698,16 @@ func Test_Facade_ListConnections(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.Empty(t, facade.ListConnections())
 		}))
 	})
@@ -719,19 +717,19 @@ func Test_Facade_ListConnections(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"gamma": flam.Bag{},
 			"alpha": flam.Bag{},
 			"beta":  flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ElementsMatch(
 				t,
 				[]string{"alpha", "beta", "gamma"},
@@ -744,21 +742,21 @@ func Test_Facade_ListConnections(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{
 			"gamma": flam.Bag{},
 			"alpha": flam.Bag{},
 			"beta":  flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(2)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(2)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		connection := mocks.NewConnection(ctrl)
+		connection := NewConnectionMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddConnection("delta", connection))
 
 			assert.ElementsMatch(
@@ -775,16 +773,16 @@ func Test_Facade_GetConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConnection("mock")
 			assert.Nil(t, got)
 			assert.ErrorIs(t, e, flam.ErrUnknownResource)
@@ -796,30 +794,30 @@ func Test_Facade_GetConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		configConfig := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.ConfigDriverDefault,
+				"driver": ConfigDriverDefault,
 			}}
 		dialectConfig := flam.Bag{
 			"default": flam.Bag{
-				"driver": database.DialectDriverSqlite,
+				"driver": DialectDriverSqlite,
 			}}
 		connectionConfig := flam.Bag{
 			"default": flam.Bag{
 				"config":  "default",
 				"dialect": "default",
 			}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConfigs).Return(configConfig).Times(1)
-		factoryConfig.EXPECT().Get(database.PathDialects).Return(dialectConfig).Times(1)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(connectionConfig).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConfigs).Return(configConfig).Times(1)
+		factoryConfig.EXPECT().Get(PathDialects).Return(dialectConfig).Times(1)
+		factoryConfig.EXPECT().Get(PathConnections).Return(connectionConfig).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			got, e := facade.GetConnection("default")
 			assert.NotNil(t, got)
 			assert.NoError(t, e)
@@ -831,18 +829,18 @@ func Test_Facade_GetConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		connection := mocks.NewConnection(ctrl)
+		connection := NewConnectionMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddConnection("disk", connection))
 
 			got, e := facade.GetConnection("disk")
@@ -858,14 +856,14 @@ func Test_Facade_AddConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
+		factoryConfig := NewFactoryConfigMock(ctrl)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ErrorIs(
 				t,
 				facade.AddConnection("connection", nil),
@@ -878,18 +876,18 @@ func Test_Facade_AddConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{"connection": flam.Bag{}}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		connection := mocks.NewConnection(ctrl)
+		connection := NewConnectionMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			assert.ErrorIs(
 				t,
 				facade.AddConnection("connection", connection),
@@ -902,18 +900,18 @@ func Test_Facade_AddConnection(t *testing.T) {
 		defer ctrl.Finish()
 
 		container := dig.New()
-		require.NoError(t, database.NewProvider().Register(container))
+		require.NoError(t, NewProvider().Register(container))
 
 		config := flam.Bag{}
-		factoryConfig := mocks.NewFactoryConfig(ctrl)
-		factoryConfig.EXPECT().Get(database.PathConnections).Return(config).Times(1)
+		factoryConfig := NewFactoryConfigMock(ctrl)
+		factoryConfig.EXPECT().Get(PathConnections).Return(config).Times(1)
 		require.NoError(t, container.Provide(func() flam.FactoryConfig {
 			return factoryConfig
 		}))
 
-		connection := mocks.NewConnection(ctrl)
+		connection := NewConnectionMock(ctrl)
 
-		assert.NoError(t, container.Invoke(func(facade database.Facade) {
+		assert.NoError(t, container.Invoke(func(facade Facade) {
 			require.NoError(t, facade.AddConnection("connection", connection))
 
 			got, e := facade.GetConnection("connection")
